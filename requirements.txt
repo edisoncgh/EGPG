@@ -1,0 +1,6 @@
+pipreqs==0.4.13
+django-simple-captcha==0.5.18
+django-mdeditor==0.1.20
+django-ranged-response==0.2.0
+simpleui==4.0.2
+fontawesomefree==6.4.2
