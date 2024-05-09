@@ -126,7 +126,7 @@ USE_TZ = False  # 关闭时区设置
 STATIC_URL = '/static/'
 # 配置静态文件目录
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'blog\git-pages-contents'), # 目录设置为git-pages-contents
 ]
 
 # 页面模板

@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.contrib import admin
 from mdeditor.fields import MDTextField
 
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from jinja2 import Environment, FileSystemLoader
 from markdown import markdown
@@ -14,7 +14,7 @@ import os
 class Category(models.Model):
     cat_id = models.AutoField(verbose_name='类别id', primary_key=True)  # 主键，自增
     cat_name = models.CharField(
-        verbose_name='类别名称', max_length=20, null=False)
+        verbose_name='类别名称', max_length=20, null=False, default='未分类')
     add_date = models.DateTimeField(
         verbose_name='添加日期', default=timezone.now)
 
@@ -30,6 +30,9 @@ class Category(models.Model):
         db_table = "categories"  # 数据库表名
         verbose_name = '类别'  # 指定后台显示模型名称
         verbose_name_plural = '所有类别'  # 指定后台显示模型复数名称
+
+# 创建默认分类
+default_category = Category.objects.get(cat_name='未分类').pk
 
 # ========================== article ==========================
 class Article(models.Model):
@@ -47,10 +50,11 @@ class Article(models.Model):
         verbose_name='内容类型'
     )  # 内容类型，默认为博文
     category = models.ForeignKey(
-        Category, on_delete=models.CASCADE, verbose_name='文章分类', null=True, blank=True)  # 外键，指向所属分类
+        Category, on_delete=models.CASCADE, verbose_name='文章分类', null=False, default=default_category)  # 外键，指向所属分类
     article_id = models.IntegerField(
         verbose_name='文章ID', primary_key=True)  # 主键，自增
-    title = models.CharField(verbose_name='标题', max_length=50, default='无题')
+    # 因为创建静态文件依赖博文标题，所以文章标题不可重复
+    title = models.CharField(verbose_name='标题', max_length=50, default='无题', unique=True)
     content = MDTextField(verbose_name='正文', blank=True, null=True)
     publish_date = models.DateTimeField(
         verbose_name='发布日期', default=timezone.now, editable=False)
@@ -129,6 +133,7 @@ class Friendlink(models.Model):
 # 监听Article模型的post_save信号
 @receiver(post_save, sender=Article)
 def create_html_file(sender, instance, **kwargs):
+    print(f'============监听到文章{instance.title}保存信号============')
     # 创建一个 Jinja2 环境
     env = Environment(loader=FileSystemLoader('blog/templates'))
 
@@ -139,15 +144,42 @@ def create_html_file(sender, instance, **kwargs):
     html_content = markdown(instance.content)
 
     # 渲染模板
-    output = template.render(content=html_content)
+    output = template.render(
+        content=html_content, 
+        title=instance.title, 
+        category=instance.category if instance.category else None, 
+        publish_date=instance.publish_date
+    )
+
+    # with open(os.path.join('blog/git-pages-contents/Unclassified', f'{instance.title}.html'), 'w', encoding='utf-8') as f:
+    #         f.write(output)
 
     # 创建分类目录
-    if instance.category:
+    if instance.category.cat_name != '未分类':
         if not os.path.exists(os.path.join('blog/git-pages-contents', instance.category.cat_name)):
             os.makedirs(os.path.join('blog/git-pages-contents', instance.category.cat_name))
             # 将渲染后的 HTML 写入文件，按分类存储
             with open(os.path.join(f'blog/git-pages-contents/{instance.category.cat_name}', f'{instance.title}.html'), 'w', encoding='utf-8') as f:
+                print(f'======blog/git-pages-contents/{instance.category.cat_name}/{instance.title}.html======')
                 f.write(output)
     # 如果没有分类，就直接放在未分类目录
-    with open(os.path.join('blog/git-pages-contents/Unclassified', f'{instance.title}.html'), 'w', encoding='utf-8') as f:
-        f.write(output)
+    else:
+        if not os.path.exists(os.path.join('blog/git-pages-contents', instance.category.cat_name)):
+            # 创建未分类目录
+            os.makedirs(os.path.join('blog/git-pages-contents', '未分类'))
+        with open(os.path.join('blog/git-pages-contents/未分类', f'{instance.title}.html'), 'w', encoding='utf-8') as f:
+            f.write(output)
+
+# 基于django信号机制，当文章删除时，同步删除同命静态文件
+# 监听Article模型的post_delete信号
+@receiver(post_delete, sender=Article)
+def delete_html_file(sender, instance, **kwargs):
+    if instance.category.cat_name != '未分类':
+        # 构造文件路径
+        file_path = os.path.join(f'blog/git-pages-contents/{instance.category.cat_name}', f'{instance.title}.html')
+    else:
+        file_path = os.path.join(f'blog/git-pages-contents/未分类', f'{instance.title}.html')
+    # 检查文件是否存在
+    if os.path.isfile(file_path):
+        # 删除文件
+        os.remove(file_path)
