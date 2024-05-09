@@ -1,5 +1,5 @@
-# EGPG:EdisonGithubPagesGenerator
-一个使用`python django`编写的用于维护github pages静态博客的静态页面生成器。
+# EGPG:静态博客内容生成管理器
+EdisonGithubPagesGenerator(EGPG)，一个使用`python django`编写的用于维护github pages静态博客的静态页面生成器。
 ### Motivation
 个人搭建博客最大的成本就是服务器开销，github pages可以很好地帮助每一个coder避免这一部分成本。但是诸如docsify、vuepress的静态文档管理框架有些**过于静态**了，一些轻微响应化的行为（诸如归档页面、文章分类、友链添加、博客首页）都需要自己手动配置响应的文档页面，这未免太麻烦了。正好本人曾经稍微浅尝过`django`，`python`也是我目前的主力工作语言，就搞了这么一个静态页面生成、维护工具。
 ### Introduction
