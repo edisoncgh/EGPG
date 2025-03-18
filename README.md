@@ -51,6 +51,11 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 
+4. 启动服务
+```bash
+python manage.py runserver
+```
+
 ### 2. 文章管理
 1. 访问 `/admin` 进入管理后台
 2. 在"所有文章"中可以：
