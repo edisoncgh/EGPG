@@ -1,20 +1,19 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 
 <head>
-    <title>{% block title %}MyBlog{% endblock %}</title>
-    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% if site_config and site_config.favicon %}
+    <link rel="icon" type="image/x-icon" href="{{ site_config.favicon.url }}">
+    {% endif %}
+    <title>{% if site_config %}{{ site_config.site_name }}{% else %}我的博客{% endif %}</title>
+    {% load static %}
     <meta charset="UTF-8">
 
     <!-- mdeditor -->
     <link href="{% static 'mdeditor/css/editormd.min.css' %}" rel="stylesheet">
     <link href="{% static 'mdeditor/css/editormd.preview.css' %}" rel="stylesheet">
-
-    <!-- OwO评论区表情 -->
-    <link rel="stylesheet" href="{%static 'plugins/OwO/OwO.min.css'%}">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
     <!-- bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
@@ -39,10 +38,6 @@
     <!-- UIkit JS -->
     <script src="https://cdn.jsdelivr.net/npm/uikit@3.2.2/dist/js/uikit.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/uikit@3.2.2/dist/js/uikit-icons.min.js"></script>
-
-    <!-- FontAwesome -->
-    <!-- One file includes all the Font Awesome Free icons and utilities -->
-    <script src="{% static 'fontawesomefree/js/all.min.js' %}"></script>
 </head>
 
 <body>

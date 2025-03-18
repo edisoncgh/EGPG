@@ -14,17 +14,20 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.template.context_processors import static
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
-from blog import views
-
+# 定义基本的URL模式
 urlpatterns = [
-    # 配置缺省页面
-    path('', views.start_page, name='start_page.html'),
     path('admin/', admin.site.urls),
-    # 配置博客子系统路由
-    path('blog/', include('blog.urls')),
+    path('', include('blog.urls')),
+    path('mdeditor/', include('mdeditor.urls')),
 ]
+
+# 开发环境下添加静态文件和媒体文件的服务
+if settings.DEBUG:
+    urlpatterns += staticfiles_urlpatterns()
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)

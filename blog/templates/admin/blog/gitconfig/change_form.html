@@ -1,0 +1,12 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block submit_buttons_bottom %}
+{{ block.super }}
+{% if show_manual_push %}
+<div class="submit-row">
+    <input type="button" value="手动推送到GitHub Pages" onclick="window.location.href='{% url 'admin:git_manual_push' %}'"
+        style="background: #417690; color: white;">
+</div>
+{% endif %}
+{% endblock %}

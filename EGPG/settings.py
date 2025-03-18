@@ -23,24 +23,33 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-od6z=wj840u(dg^k7t^tnxz5qj#2dy-^5-rg)__3*2*ga^$@ym'
 
+# -------- 尝试解决simpleui不显示的问题 --------
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*', ]
+STATIC_URL = '/static/'
 
+# STATIC_ROOT = os.path.join(BASE_DIR, '/static/')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "/static/"),
+]
+
+STATIC_ROOT = 'static'
+# -------- 尝试解决simpleui不显示的问题 --------
 
 # Application definition
 
 INSTALLED_APPS = [
-    "simpleui",   # 加载后台美化，一定要加在admin前
+    'simpleui',  # 必须在 admin 之前
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'blog.apps.BlogConfig',  # 注册博客子系统
-    'mdeditor',  # markdown支持
+    'blog',
+    'mdeditor',
 ]
 
 MIDDLEWARE = [
@@ -82,8 +91,15 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        'OPTIONS': {
+            'timeout': 20,  # 设置超时时间（秒）
+        },
     }
 }
+
+# 添加数据库并发设置
+DATABASE_ROUTERS = []
+CONN_MAX_AGE = 0  # 禁用持久连接
 
 
 # Password validation
@@ -109,7 +125,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
 # LANGUAGE_CODE = 'en-us'
-LANGUAGE_CODE = 'zh-Hans' # 修改为中文
+LANGUAGE_CODE = 'zh-Hans'  # 修改为中文
 
 TIME_ZONE = 'UTC'
 
@@ -124,9 +140,9 @@ USE_TZ = False  # 关闭时区设置
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
-# 配置静态文件目录
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # 修改静态文件收集目录
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'blog\git-pages-contents'), # 目录设置为git-pages-contents
+    os.path.join(BASE_DIR, 'blog/static'),
 ]
 
 # 页面模板
@@ -159,4 +175,54 @@ SIMPLEUI_ICON = {
     '所有友链': 'el-icon-link',
 }
 # 显示服务器信息
-SIMPLEUI_HOME_INFO = True
+SIMPLEUI_HOME_INFO = False
+
+# ======== 自定义配置项 ========
+ENABLE_AUTO_GIT_PUSH = True  # 是否启用自动推送到GitHub Pages
+GITHUB_PAGES_REPO = 'origin'  # GitHub Pages仓库名称
+GITHUB_PAGES_BRANCH = 'master'  # GitHub Pages分支名称
+
+# 媒体文件配置
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Markdown编辑器配置
+MDEDITOR_CONFIGS = {
+    'default': {
+        'width': '100%',  # 编辑器宽度
+        'height': 500,  # 编辑器高度
+        'toolbar': ["undo", "redo", "|",
+                    "bold", "del", "italic", "quote", "ucwords", "uppercase", "lowercase", "|",
+                    "h1", "h2", "h3", "h5", "h6", "|",
+                    "list-ul", "list-ol", "hr", "|",
+                    "link", "reference-link", "image", "code", "preformatted-text", "code-block", "table", "datetime",
+                    "emoji", "html-entities", "pagebreak", "goto-line", "|",
+                    "help", "info",
+                    "||", "preview", "watch", "fullscreen"],  # 工具栏按钮
+        # 图片上传格式
+        'upload_image_formats': ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
+        'image_folder': 'editor',  # 图片保存文件夹
+        'theme': 'default',  # 编辑器主题
+        'preview_theme': 'default',  # 预览区域主题
+        'editor_theme': 'default',  # edit区域主题
+        'toolbar_autofixed': True,  # 工具栏是否吸顶
+        'search_replace': True,  # 是否开启查找替换
+        'emoji': True,  # 是否开启表情功能
+        'tex': True,  # 是否开启 tex 图表功能
+        'flow_chart': True,  # 是否开启流程图功能
+        'sequence': True,  # 是否开启序列图功能
+        'watch': True,  # 实时预览
+        'lineWrapping': True,  # 自动换行
+        'lineNumbers': True  # 显示行号
+    }
+}
+
+# SimpleUI 配置
+SIMPLEUI_DEFAULT_THEME = 'admin.lte.css'
+SIMPLEUI_HOME_INFO = False
+SIMPLEUI_ANALYSIS = False
+
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
